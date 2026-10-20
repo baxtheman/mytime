@@ -25,7 +25,7 @@ export async function openPlaceForm({ place = null, pos = null } = {}) {
   let map = null;
   let saveBtn;
 
-  const name = h('input', { type: 'text', maxlength: PLACE_NAME_MAX, required: true, value: place?.name || '', autocomplete: 'off' });
+  const name = h('input', { type: 'text', maxlength: PLACE_NAME_MAX, value: place?.name || '', placeholder: 'Facoltativo', autocomplete: 'off' });
   const posText = h('p', { class: 'pos-text', 'aria-live': 'polite' });
   const radius = h('input', { type: 'range', min: MIN_RADIUS_M, max: MAX_RADIUS_M, step: 10, value: place?.radius ?? DEFAULT_RADIUS_M });
   const radiusOut = h('output', { class: 'range-value' });
@@ -44,12 +44,16 @@ export async function openPlaceForm({ place = null, pos = null } = {}) {
   };
   radius.addEventListener('input', renderRadius);
 
-  const fillAddress = async (force) => {
+  let addressLookup = null; // ricerca in corso: il salvataggio la attende se il nome è vuoto
+  const fillAddress = (force) => {
     if (state.lat == null || (!force && address.value.trim())) return;
     address.placeholder = 'Ricerca indirizzo…';
-    const text = await geocode.lookup(state.lat, state.lon);
-    address.placeholder = text ? '' : navigator.onLine ? 'Indirizzo non trovato' : 'Offline: inseriscilo a mano o riprova più tardi';
-    if (text && (force || !address.value.trim())) address.value = text;
+    addressLookup = geocode.lookup(state.lat, state.lon).then((text) => {
+      address.placeholder = text ? '' : navigator.onLine ? 'Indirizzo non trovato' : 'Offline: inseriscilo a mano o riprova più tardi';
+      if (text && (force || !address.value.trim())) address.value = text;
+      addressLookup = null;
+    });
+    return addressLookup;
   };
 
   const gpsBtn = h(
@@ -95,7 +99,7 @@ export async function openPlaceForm({ place = null, pos = null } = {}) {
   const body = h(
     'form',
     { class: 'form', onsubmit: (e) => e.preventDefault() },
-    field('Nome', name, `Obbligatorio, massimo ${PLACE_NAME_MAX} caratteri.`),
+    field('Nome', name, `Facoltativo: se vuoto si usa l’indirizzo. Massimo ${PLACE_NAME_MAX} caratteri.`),
     h('div', { class: 'field' }, h('span', { class: 'label', text: 'Posizione' }), posText, gpsBtn),
     mapSlot,
     field('Raggio di tolleranza', radius),
@@ -138,10 +142,7 @@ export async function openPlaceForm({ place = null, pos = null } = {}) {
         key: 'save',
         variant: 'primary',
         onClick: async () => {
-          if (!name.value.trim()) {
-            name.focus();
-            throw new Error('Inserisci il nome del luogo.');
-          }
+          if (!name.value.trim() && !address.value.trim() && addressLookup) await addressLookup;
           const saved = await db.savePlace({
             id: place?.id,
             name: name.value,

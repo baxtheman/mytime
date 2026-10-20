@@ -1,15 +1,16 @@
-// Service worker di Registro Presenze.
+// Service worker di ndóve? (prefisso cache invariato per compatibilità).
 // A ogni rilascio incrementare CACHE_VERSION (e APP_VERSION in js/config.js).
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v4';
 const PREFIX = 'registro-presenze-';
 const SHELL_CACHE = `${PREFIX}${CACHE_VERSION}`;
 const TILE_CACHE = `${PREFIX}tiles`; // condivisa tra versioni, max 200 voci
 const TILE_LIMIT = 200;
 
+// './' (non './index.html'): server come `npx serve` reindirizzano index.html, e una risposta
+// rediretta non può essere usata per una navigazione.
 const SHELL = [
   './',
-  './index.html',
   './manifest.json',
   './css/app.css',
   './js/app.js',
@@ -49,7 +50,13 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(SHELL_CACHE);
-      await cache.addAll(SHELL.map((u) => new Request(u, { cache: 'reload' })));
+      await Promise.all(
+        SHELL.map(async (u) => {
+          const res = await fetch(new Request(u, { cache: 'reload' }));
+          if (!res.ok) throw new Error(`Precache fallita: ${u} (${res.status})`);
+          await cache.put(u, await unredirect(res));
+        }),
+      );
       // Il CDN è facoltativo: un errore non deve bloccare l'installazione.
       await Promise.all(
         CDN.map(async (u) => {
@@ -79,12 +86,18 @@ self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
+/** Copia senza il flag "redirected" (altrimenti il browser la rifiuta per le navigazioni). */
+async function unredirect(res) {
+  if (!res.redirected) return res;
+  return new Response(await res.blob(), { status: res.status, statusText: res.statusText, headers: res.headers });
+}
+
 async function cacheFirst(request, cacheKey = request) {
   const cache = await caches.open(SHELL_CACHE);
   const hit = await cache.match(cacheKey, { ignoreSearch: true });
   if (hit) return hit;
-  const res = await fetch(request);
-  if (res.ok && (res.type === 'basic' || res.type === 'cors')) cache.put(cacheKey, res.clone());
+  const res = await unredirect(await fetch(request));
+  if (res.ok && (res.type === 'basic' || res.type === 'cors' || res.type === 'default')) cache.put(cacheKey, res.clone());
   return res;
 }
 
@@ -130,7 +143,11 @@ self.addEventListener('fetch', (event) => {
   if (url.origin === self.location.origin) {
     // Navigazioni: sempre l'app shell (single page).
     if (request.mode === 'navigate') {
-      event.respondWith(cacheFirst(request, new URL('./index.html', self.registration.scope).href).catch(() => caches.match('./')));
+      event.respondWith(
+        cacheFirst(new Request(self.registration.scope), self.registration.scope).catch(
+          async () => (await caches.match(self.registration.scope)) || Response.error(),
+        ),
+      );
       return;
     }
     event.respondWith(cacheFirst(request));

@@ -1,6 +1,7 @@
 // Avvio, routing, registrazione del service worker, sincronizzazione tra schede.
 
 import * as db from './db.js';
+import { APP_NAME } from './config.js';
 import * as geocode from './geocode.js';
 import { isStandalone } from './geo.js';
 import { h, icon, showError, toast } from './ui/dom.js';
@@ -57,8 +58,8 @@ function route() {
   current?.instance?.destroy?.();
   main.replaceChildren();
   main.dataset.screen = screen.id;
-  titleEl.textContent = screen.id === 'presenza' ? 'Registro Presenze' : screen.title;
-  document.title = screen.id === 'presenza' ? 'Registro Presenze' : `${screen.title} · Registro Presenze`;
+  titleEl.textContent = screen.id === 'presenza' ? APP_NAME : screen.title;
+  document.title = screen.id === 'presenza' ? APP_NAME : `${screen.title} · ${APP_NAME}`;
   for (const a of document.querySelectorAll('#tabbar .tab')) {
     if (a.dataset.tab === screen.id) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
@@ -103,9 +104,11 @@ async function registerServiceWorker() {
     if (reg.waiting && navigator.serviceWorker.controller) showUpdateBanner(reg.waiting);
     if (reg.installing) watch(reg.installing);
     reg.addEventListener('updatefound', () => reg.installing && watch(reg.installing));
+    // Ricarica solo quando un SW già attivo viene sostituito (Aggiorna), non alla prima installazione.
     let reloading = false;
+    const hadController = Boolean(navigator.serviceWorker.controller);
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (reloading) return;
+      if (reloading || !hadController) return;
       reloading = true;
       location.reload();
     });

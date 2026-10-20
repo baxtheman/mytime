@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Registro Presenze</title>
+    <title>📍 ndóve?</title>
     <meta name="description" content="Registra arrivo e partenza dai luoghi con data, ora e posizione GPS. I dati restano sul dispositivo." />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
@@ -14,7 +14,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Presenze" />
+    <meta name="apple-mobile-web-app-title" content="ndóve?" />
     <link rel="stylesheet" href="./css/app.css" />
     <script>
       // Tema prima del primo disegno (evita il lampo chiaro/scuro).
@@ -28,7 +28,7 @@
   <body>
     <a class="skip-link" href="#main">Vai al contenuto</a>
     <header class="topbar">
-      <h1 id="screen-title">Registro Presenze</h1>
+      <h1 id="screen-title">📍 ndóve?</h1>
       <span id="offline-pill" class="pill" hidden>Offline</span>
       <a class="icon-btn" href="#info" aria-label="Informazioni">
         <svg class="icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 15h-2v-6h2v6Zm0-8h-2V7h2v2Z"/></svg>
@@ -39,10 +39,20 @@
     </header>
     <div id="banners" class="banners"></div>
     <main id="main" tabindex="-1">
-      <noscript><p class="card">Registro Presenze richiede JavaScript attivo.</p></noscript>
+      <noscript><p class="card">ndóve? richiede JavaScript attivo.</p></noscript>
     </main>
     <nav id="tabbar" class="tabbar" aria-label="Sezioni"></nav>
     <div id="toasts" class="toasts" aria-live="polite" aria-atomic="false"></div>
     <div id="alerts" class="alerts"></div>
+    <script>
+      // Aperto come file: i moduli ES e il service worker non funzionano senza un server.
+      if (location.protocol === 'file:') {
+        document.getElementById('main').innerHTML =
+          '<div class="card" role="alert"><h2>Avvia l’app da un server locale</h2>' +
+          '<p>Aperta come file l’app non può funzionare. Nella cartella del progetto esegui:</p>' +
+          '<p><code>npm start</code> &nbsp;oppure&nbsp; <code>python3 -m http.server 8000</code></p>' +
+          '<p>poi apri <a href="http://localhost:8000/">http://localhost:8000/</a>.</p></div>';
+      }
+    </script>
   </body>
 </html>

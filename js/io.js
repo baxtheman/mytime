@@ -1,7 +1,7 @@
 // Export JSON (backup completo e versionato), export CSV (Excel italiano), validazione import.
 
 import * as db from './db.js';
-import { APP_VERSION, EXPORT_FORMAT, EXPORT_SCHEMA_VERSION, SUPPORTED_SCHEMA_VERSIONS, PLACE_NAME_MAX, NOTE_MAX, FLAG_LABELS } from './config.js';
+import { APP_SHORT_NAME, FILE_PREFIX, APP_VERSION, EXPORT_FORMAT, EXPORT_SCHEMA_VERSION, SUPPORTED_SCHEMA_VERSIONS, PLACE_NAME_MAX, NOTE_MAX, FLAG_LABELS } from './config.js';
 import { dayKey, fmtDate, fmtDateTime, fmtDuration, fmtNumber } from './format.js';
 import { placeLabel } from './report.js';
 
@@ -18,7 +18,7 @@ export async function buildBackupFile() {
     places,
     visits,
   };
-  const name = `registro-presenze-${dayKey(new Date())}.json`;
+  const name = `${FILE_PREFIX}-${dayKey(new Date())}.json`;
   return new File([JSON.stringify(data, null, 2)], name, { type: 'application/json' });
 }
 
@@ -98,8 +98,8 @@ export function buildCsv(visits, placesById) {
 
 export function buildCsvFile(visits, placesById, range) {
   const name = range
-    ? `registro-presenze-${dayKey(range.start)}_${dayKey(new Date(range.end.getTime() - 1))}.csv`
-    : `registro-presenze-${dayKey(new Date())}.csv`;
+    ? `${FILE_PREFIX}-${dayKey(range.start)}_${dayKey(new Date(range.end.getTime() - 1))}.csv`
+    : `${FILE_PREFIX}-${dayKey(new Date())}.csv`;
   return new File([buildCsv(visits, placesById)], name, { type: 'text/csv;charset=utf-8' });
 }
 
@@ -134,7 +134,7 @@ const pickPos = (p) => ({ lat: p.lat, lon: p.lon, accuracy: isNum(p.accuracy) ? 
 export function validateBackup(json, existingPlaceIds = new Set()) {
   const errors = [];
   if (!json || typeof json !== 'object' || Array.isArray(json)) return { errors: ['Il file non contiene un oggetto JSON valido.'] };
-  if (json.format !== EXPORT_FORMAT) return { errors: [`Formato non riconosciuto: il file non è un backup di Registro Presenze.`] };
+  if (json.format !== EXPORT_FORMAT) return { errors: [`Formato non riconosciuto: il file non è un backup di ${APP_SHORT_NAME}.`] };
   if (!SUPPORTED_SCHEMA_VERSIONS.includes(json.schemaVersion))
     return {
       errors: [`Versione del backup non supportata (schemaVersion ${JSON.stringify(json.schemaVersion)}). Aggiorna l'app e riprova.`],

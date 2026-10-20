@@ -1,0 +1,14 @@
+{
+  "name": "registro-presenze",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PWA per registrare arrivo e partenza dai luoghi con GPS. Nessuna build: file statici.",
+  "type": "module",
+  "scripts": {
+    "start": "node serve.mjs",
+    "dev": "node serve.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -2,7 +2,7 @@
 
 import * as db from '../db.js';
 import * as geocode from '../geocode.js';
-import { BACKUP_REMINDER_DAYS, FORGOTTEN_CHECKOUT_MS, NOTE_MAX } from '../config.js';
+import { APP_SHORT_NAME, BACKUP_REMINDER_DAYS, FORGOTTEN_CHECKOUT_MS, NOTE_MAX } from '../config.js';
 import { rankPlaces, distance } from '../geo.js';
 import { fmtTime, fmtDate, fmtDuration, fmtDistance, fmtNumber, toInputValue, fromInputValue, nowRoundedToMinute, dayRange } from '../format.js';
 import { placeLabel, dailyTotals } from '../report.js';
@@ -293,7 +293,7 @@ async function renderNotices(container, hasVisits) {
 async function exportNow() {
   try {
     const file = await buildBackupFile();
-    const r = await deliverFile(file, { title: 'Backup Registro Presenze' });
+    const r = await deliverFile(file, { title: `Backup ${APP_SHORT_NAME}` });
     if (r !== 'cancelled') {
       await markBackupDone();
       toast('Backup esportato');

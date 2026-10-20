@@ -98,7 +98,7 @@ export function flagTags(v) {
 const plural = (n, one, many) => `${fmtNumber(n)} ${n === 1 ? one : many}`;
 
 export function reportSubject(range) {
-  return `Registro presenze – ${range.reportLabel}`;
+  return `${APP_NAME} – ${range.reportLabel}`;
 }
 
 /**
@@ -108,7 +108,7 @@ export function reportSubject(range) {
 export function buildReportText(rep, opts = {}) {
   const { detail = 'summary', notes = true, addresses = true } = opts;
   const L = [];
-  L.push('REGISTRO PRESENZE');
+  L.push(APP_NAME);
   L.push(`Periodo: ${rep.range.reportLabel}`);
   L.push('');
   L.push('RIEPILOGO');

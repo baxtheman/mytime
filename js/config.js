@@ -1,6 +1,10 @@
 // Costanti condivise. A ogni rilascio aggiornare APP_VERSION e CACHE_VERSION in sw.js.
-export const APP_NAME = 'Registro Presenze';
-export const APP_VERSION = '1.0.0';
+export const APP_NAME = '📍 ndóve?';
+// Nome breve senza emoji (nomi file, etichetta della schermata Home).
+export const APP_SHORT_NAME = 'ndóve?';
+export const FILE_PREFIX = 'ndove';
+// Identificatori interni (database, cache, formato backup): NON cambiarli, servono per i dati esistenti.
+export const APP_VERSION = '1.0.3';
 
 export const DB_NAME = 'registro-presenze';
 export const DB_VERSION = 1;

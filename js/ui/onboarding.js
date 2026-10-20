@@ -6,7 +6,7 @@ import { h, openDialog } from './dom.js';
 
 const STEPS = [
   {
-    title: 'Benvenuto in Registro Presenze',
+    title: 'Benvenuto in 📍 ndóve?',
     text: [
       'Registra quando arrivi e quando parti da un luogo: data, ora, posizione GPS e indirizzo.',
       'Dalla sezione Report puoi creare un riepilogo in testo semplice da inviare via email o incollare dove vuoi.',

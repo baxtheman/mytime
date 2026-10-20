@@ -2,7 +2,7 @@
 // Date salvate come stringhe ISO UTC (toISOString()).
 
 import { DB_NAME, DB_VERSION, CHANNEL_NAME, PLACE_NAME_MAX, NOTE_MAX, MIN_RADIUS_M, MAX_RADIUS_M, DEFAULT_RADIUS_M } from './config.js';
-import { deviceTimeZone, normalizeText } from './format.js';
+import { deviceTimeZone, normalizeText, fmtCoords } from './format.js';
 
 // ---------------------------------------------------------------------------
 // Errori
@@ -259,11 +259,14 @@ export function getPlace(id) {
 }
 
 export async function savePlace(input) {
-  const name = String(input.name ?? '').trim();
-  if (!name) throw validationError('Inserisci il nome del luogo.');
-  if (name.length > PLACE_NAME_MAX) throw validationError(`Il nome può avere al massimo ${PLACE_NAME_MAX} caratteri.`);
   if (!Number.isFinite(input.lat) || !Number.isFinite(input.lon))
     throw validationError('Posizione mancante: usa "Usa posizione attuale" stando sul posto.');
+  // Nome facoltativo: se vuoto si usa l'indirizzo, e in mancanza di questo le coordinate.
+  const name =
+    String(input.name ?? '').trim() ||
+    String(input.address ?? '').trim().slice(0, PLACE_NAME_MAX) ||
+    `Posizione ${fmtCoords(input.lat, input.lon)}`;
+  if (name.length > PLACE_NAME_MAX) throw validationError(`Il nome può avere al massimo ${PLACE_NAME_MAX} caratteri.`);
   const radius = Math.round(Number(input.radius ?? DEFAULT_RADIUS_M));
   if (!(radius >= MIN_RADIUS_M && radius <= MAX_RADIUS_M))
     throw validationError(`Il raggio deve essere tra ${MIN_RADIUS_M} e ${MAX_RADIUS_M} m.`);

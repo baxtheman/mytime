@@ -1,6 +1,6 @@
-# Registro Presenze
+# 📍 ndóve?
 
-PWA single-page in italiano per registrare arrivo e partenza dai luoghi con data/ora, posizione GPS obbligatoria, indirizzo leggibile (Nominatim), note e report testuali da condividere via email.
+PWA single-page in italiano (ex "Registro Presenze") per registrare arrivo e partenza dai luoghi con data/ora, posizione GPS obbligatoria, indirizzo leggibile (Nominatim), note e report testuali da condividere via email.
 
 - HTML, CSS e JavaScript vanilla con moduli ES nativi: **nessuna build**, i file si servono così come sono.
 - Tutti i dati restano nel browser (IndexedDB). Nessun server, account, cloud o telemetria.
@@ -10,12 +10,16 @@ PWA single-page in italiano per registrare arrivo e partenza dai luoghi con data
 ## Avvio in locale
 
 ```bash
-npx serve .
+npm start            # server incluso (serve.mjs), nessuna dipendenza → http://localhost:8000
+npm start -- 8080    # su un'altra porta
 # oppure
+npx serve .          # → http://localhost:3000
 python3 -m http.server 8000
 ```
 
-Apri `http://localhost:3000` (serve) o `http://localhost:8000` (Python). `localhost` è considerato un contesto sicuro: GPS e service worker funzionano anche senza HTTPS.
+`localhost` è considerato un contesto sicuro: GPS e service worker funzionano anche senza HTTPS. Non aprire `index.html` come file (`file://`): moduli ES e service worker non funzionano.
+
+Il service worker mette in cache `./` e non `./index.html`, perché alcuni server (come `npx serve`) reindirizzano `index.html` e una risposta rediretta non può servire una navigazione.
 
 > Dopo ogni modifica ai file, ricarica con la cache del service worker svuotata (DevTools › Application › Service workers › "Update on reload"), oppure incrementa la versione della cache (vedi sotto).
 
@@ -100,6 +104,10 @@ Le migrazioni stanno nell'array `MIGRATIONS` di `db.js`, una funzione per ogni v
 | `onChange(fn)` | notifiche di modifica, anche dalle altre schede (`BroadcastChannel("registro-presenze")`) |
 
 Ogni errore IndexedDB viene convertito in `AppError` con un messaggio in italiano e l'azione suggerita (`wrapError`).
+
+## Nome dell'app
+
+Il nome mostrato (`📍 ndóve?`), quello breve senza emoji (`ndóve?`, schermata Home e titoli dei file condivisi) e il prefisso dei file esportati (`ndove-AAAA-MM-GG.json`) sono in `js/config.js`, più `index.html` e `manifest.json`. Gli identificatori interni restano `registro-presenze` (database IndexedDB, cache del service worker, `BroadcastChannel`, campo `format` dei backup): cambiarli renderebbe invisibili i dati già salvati e non importabili i backup esistenti.
 
 ## Nuova versione: incrementare la cache
 

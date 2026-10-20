@@ -2,7 +2,7 @@
 
 import * as db from '../db.js';
 import * as geocode from '../geocode.js';
-import { APP_VERSION } from '../config.js';
+import { APP_VERSION, APP_SHORT_NAME } from '../config.js';
 import { fmtBytes, fmtDateTime, fmtNumber } from '../format.js';
 import { buildBackupFile, markBackupDone, buildCsvFile, readJsonFile, validateBackup, importSummary } from '../io.js';
 import { h, setChildren, openDialog, toast, showError, field, deliverFile, downloadFile } from './dom.js';
@@ -12,7 +12,7 @@ import { showOnboarding } from './onboarding.js';
 
 async function exportJson() {
   const file = await buildBackupFile();
-  const r = await deliverFile(file, { title: 'Backup Registro Presenze' });
+  const r = await deliverFile(file, { title: `Backup ${APP_SHORT_NAME}` });
   if (r !== 'cancelled') {
     await markBackupDone();
     toast('Backup esportato');
@@ -22,7 +22,7 @@ async function exportJson() {
 async function exportCsv() {
   const [{ visits }, places] = await Promise.all([db.exportAll(), db.getPlaces({ includeDeleted: true })]);
   const file = buildCsvFile(visits, new Map(places.map((p) => [p.id, p])));
-  await deliverFile(file, { title: 'Visite Registro Presenze (CSV)' });
+  await deliverFile(file, { title: `Visite ${APP_SHORT_NAME} (CSV)` });
 }
 
 async function importFile(file) {
