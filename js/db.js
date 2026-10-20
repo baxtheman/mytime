@@ -680,20 +680,25 @@ export async function importAll(data, mode) {
       await req(V.clear());
       await req(s('meta').delete('maxVisitMs'));
     }
+    const curPlaces = mode === 'merge' ? new Map((await req(P.getAll())).map((x) => [x.id, x])) : new Map();
+    const curVisits = mode === 'merge' ? new Map((await req(V.getAll())).map((x) => [x.id, x])) : new Map();
+    // Le scritture si accodano nella stessa transazione: un errore la annulla per intero.
+    let last = null;
     for (const p of data.places) {
-      const cur = mode === 'merge' ? await req(P.get(p.id)) : null;
+      const cur = curPlaces.get(p.id);
       if (!cur || ms(p.updatedAt) > ms(cur.updatedAt)) {
-        await req(P.put(p));
+        last = P.put(p);
         nPlaces++;
       }
     }
     for (const v of data.visits) {
-      const cur = mode === 'merge' ? await req(V.get(v.id)) : null;
+      const cur = curVisits.get(v.id);
       if (!cur || ms(v.updatedAt) > ms(cur.updatedAt)) {
-        await req(V.put(v));
+        last = V.put(v);
         nVisits++;
       }
     }
+    if (last) await req(last);
     // Una sola visita aperta: resta aperta la più recente, le altre vanno chiuse a mano.
     const open = await req(V.index('status').getAll('open'));
     let closedForReview = 0;
