@@ -165,7 +165,7 @@ export default {
         { class: 'card' },
         h('h2', { class: 'section-title', text: 'Mappa' }),
         h('label', { class: 'inline' }, mapToggle, ' Mostra la mappa (Leaflet, tile OpenStreetMap)'),
-        h('p', { class: 'hint', text: 'Facoltativa: mostra arrivo e partenza delle visite e permette di correggere la posizione dei luoghi trascinando il segnaposto. Se è spenta, nella visita c’è il pulsante «Mostra sulla mappa». Nessuna chiave API: usa le tile di OpenStreetMap.' }),
+        h('p', { class: 'hint', text: 'Attiva di serie: mostra arrivo e partenza delle visite e permette di correggere la posizione dei luoghi trascinando il segnaposto. Se la spegni, nella visita resta il pulsante «Mostra sulla mappa» e non viene scaricato nulla finché non lo tocchi. Nessuna chiave API: usa le tile di OpenStreetMap.' }),
       ),
       h(
         'section',
@@ -234,7 +234,7 @@ export default {
 
     async function render() {
       email.value = await db.getMeta('nominatimEmail', '');
-      mapToggle.checked = Boolean(await db.getMeta('mapEnabled', false));
+      mapToggle.checked = Boolean(await db.getMeta('mapEnabled', true));
       const last = await db.getMeta('lastBackupAt', null);
       backupInfo.textContent = last ? `Ultimo backup: ${fmtDateTime(last)}` : 'Nessun backup esportato finora.';
       await renderStorage();

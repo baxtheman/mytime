@@ -61,7 +61,7 @@ Screen interface: `export default { id, title, mount(el) → { update?(detail), 
 
 On **every** change to files served to the client:
 
-- increment `CACHE_VERSION` in `sw.js` (`v6` → `v7`) and `APP_VERSION` in `js/config.js`;
+- increment `CACHE_VERSION` in `sw.js` (`v7` → `v8`) and `APP_VERSION` in `js/config.js`;
 - if you add, remove or rename a file, update the `SHELL` list in `sw.js`, otherwise the app breaks offline.
 
 Do not precache `./index.html`: the shell is `./`. Some servers (`npx serve`, Vercel with clean URLs) redirect `index.html`, and a redirected response cannot be used for a navigation ("site can't be reached" on reload). `unredirect()` in `sw.js` guards against this. Don't remove it.
@@ -86,7 +86,7 @@ Do not precache `./index.html`: the shell is `./`. Some servers (`npx serve`, Ve
 - **The place name is optional.** If it's empty, the name becomes the address and, failing that, `Posizione <lat, lon>`. It is stored as the name at save time; `savePlace` waits for a pending address lookup.
 - Visits left open after an import with several open visits get `status: "closed"`, `departure: null` and the `needsClose` flag ("Da chiudere"). They are excluded from totals.
 - In the summary-only report there is a `PER GIORNO` section. Days covered only by the after-midnight part of a visit appear as "prosecuzione dal giorno precedente".
-- **Map of a visit's GPS points** in the visit dialog: arrival pin "A" (accent), departure pin "P" (text colour), dashed accuracy circles, place radius circle. It loads automatically when the map is on in Settings, otherwise only on tapping "Mostra sulla mappa". Each GPS line also has an "Apri in OpenStreetMap" link (`osmUrl()` in `map.js`). No API key: Leaflet + `tile.openstreetmap.org`, respecting the [tile usage policy](https://operations.osmfoundation.org/policies/tiles/) (visible attribution, no bulk prefetching).
+- **Map of a visit's GPS points** in the visit dialog: arrival pin "A" (accent), departure pin "P" (text colour), dashed accuracy circles, place radius circle. The map is **on by default** (`getMeta('mapEnabled', true)`: an unset value means on; an explicit `false` from the user is kept). When it's off, the visit map loads only on tapping "Mostra sulla mappa". Each GPS line also has an "Apri in OpenStreetMap" link (`osmUrl()` in `map.js`). No API key: Leaflet + `tile.openstreetmap.org`, respecting the [tile usage policy](https://operations.osmfoundation.org/policies/tiles/) (visible attribution, no bulk prefetching).
 - `meta.maxVisitMs` is the lookback margin used by `listVisits` to find visits that started before the period.
 
 ## Testing

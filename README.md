@@ -131,6 +131,6 @@ Gli utenti vedono il banner "Nuova versione disponibile · Aggiorna": il tap inv
 ## Servizi esterni
 
 - **Nominatim** (`nominatim.openstreetmap.org`): reverse geocoding, nel rispetto della [usage policy](https://operations.osmfoundation.org/policies/nominatim/) (al massimo 1 richiesta ogni 1100 ms, timeout 10 s, cache 90 giorni, nessuna ripetizione automatica; dopo 3 tentativi falliti l'indirizzo passa a `failed` e compare "Riprova indirizzo"). L'app si identifica con il Referer e con l'email facoltativa configurabile nelle Impostazioni.
-- **Leaflet** (unpkg.com) e **tile OpenStreetMap**: nessuna chiave API. La mappa si carica nei luoghi e nelle visite (punti di arrivo «A» e partenza «P») se è attivata nelle Impostazioni; altrimenti, in una visita, solo toccando «Mostra sulla mappa». Ogni coordinata ha anche il link «Apri in OpenStreetMap».
+- **Leaflet** (unpkg.com) e **tile OpenStreetMap**: nessuna chiave API. La mappa è attiva di serie e si carica nei luoghi e nelle visite (punti di arrivo «A» e partenza «P»); se la si spegne nelle Impostazioni, in una visita si carica solo toccando «Mostra sulla mappa». Ogni coordinata ha anche il link «Apri in OpenStreetMap».
 
 Indirizzi e mappe © contributori OpenStreetMap, dati con licenza [ODbL](https://opendatacommons.org/licenses/odbl/).

@@ -29,7 +29,7 @@ export default {
         { class: 'card prose' },
         h('h2', { text: 'Servizi esterni' }),
         h('p', {}, 'Per trasformare le coordinate in un indirizzo leggibile, le coordinate di arrivo, partenza e dei luoghi vengono inviate al servizio ', link('https://nominatim.org/', 'Nominatim'), ' di OpenStreetMap (', link('https://osmfoundation.org/wiki/Privacy_Policy', 'informativa privacy OSMF'), '). L’app non le salva su alcun server; gli indirizzi ottenuti restano sul dispositivo.'),
-        h('p', { text: 'Se attivi la mappa, le tile vengono scaricate da tile.openstreetmap.org e la libreria Leaflet da unpkg.com (messa in cache al primo avvio). L’app usa i font di sistema: nessun font viene scaricato.' }),
+        h('p', { text: 'La mappa (attiva di serie, disattivabile nelle Impostazioni) scarica le tile da tile.openstreetmap.org e la libreria Leaflet da unpkg.com (messa in cache al primo avvio). L’app usa i font di sistema: nessun font viene scaricato.' }),
         attribution(),
       ),
       h(

@@ -25,7 +25,7 @@ function loadLeaflet() {
 }
 
 export async function isMapEnabled() {
-  return Boolean(await db.getMeta('mapEnabled', false));
+  return Boolean(await db.getMeta('mapEnabled', true));
 }
 
 export function attribution() {
