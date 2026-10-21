@@ -1,11 +1,15 @@
 # 📍 ndóve?
 
+Per tenere tracia dei tuoi spostamenti, del tempo che passi in un luogo.
+
+Usalo su https://mytime-pwa.vercel.app
+
 PWA single-page in italiano per registrare arrivo e partenza dai luoghi con data/ora, posizione GPS obbligatoria, indirizzo leggibile (Nominatim), note e report testuali da condividere via email.
 
 - HTML, CSS e JavaScript vanilla con moduli ES nativi: **nessuna build**, i file si servono così come sono.
 - Tutti i dati restano nel browser (IndexedDB). Nessun server, account, cloud o telemetria.
 - Funziona offline dopo il primo caricamento (service worker).
-- Font di sistema (San Francisco su iOS, Roboto su Android): nessun font scaricato.
+- Usa le notifiche di sistema per ricordarti che è attivo
 
 ## Avvio in locale
 
