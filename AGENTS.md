@@ -38,7 +38,7 @@ js/geo.js        GPS (getCurrentPosition), distances, platform, error messages
 js/geocode.js    Nominatim: throttled queue, cache, retries
 js/app.js        startup, hash routing, SW registration, global errors
 js/ui/           screens (presence, history, reportScreen, places, settings, about, onboarding)
-                 and components (dom, filters, visits, placeForm, position, map, install, theme)
+                 and components (dom, filters, visits, placeForm, position, map, install, theme, notifications)
 ```
 
 Screen interface: `export default { id, title, mount(el) → { update?(detail), destroy?() } }`, registered in `SCREENS` in `js/app.js`. The route is the hash (`#presenza`, `#cronologia`, `#report`, `#luoghi`, `#impostazioni`, `#info`).
@@ -88,6 +88,7 @@ Do not precache `./index.html`: the shell is `./`. Some servers (`npx serve`, Ve
 - In the summary-only report there is a `PER GIORNO` section. Days covered only by the after-midnight part of a visit appear as "prosecuzione dal giorno precedente".
 - **Map of a visit's GPS points** in the visit dialog: arrival pin "A" (accent), departure pin "P" (text colour), dashed accuracy circles, place radius circle. The map is **on by default** (`getMeta('mapEnabled', true)`: an unset value means on; an explicit `false` from the user is kept). When it's off, the visit map loads only on tapping "Mostra sulla mappa". Each GPS line also has an "Apri in OpenStreetMap" link (`osmUrl()` in `map.js`). No API key: Leaflet + `tile.openstreetmap.org`, respecting the [tile usage policy](https://operations.osmfoundation.org/policies/tiles/) (visible attribution, no bulk prefetching).
 - **Vercel Web Analytics** (user decision): `injectAnalytics()` in `js/app.js` loads the same-origin `./_vercel/insights/script.js` (skipped on localhost). No npm import: there is no bundler. `sw.js` never intercepts `/_vercel/`. It's the only telemetry allowed, and it never sends user data.
+- **Local notification of the open visit** (`js/ui/notifications.js`): tag `visita-aperta`, text "Sei in: [luogo] dalle [ora]", "Check-out" action. `sync()` shows/updates/closes it from IndexedDB state on local changes to `visits`/`places`/`meta` and on `visibilitychange`; it rings (`renotify`) only for a fresh check-in, otherwise `silent`. No push, no VAPID, no server, no GPS. Permission is asked only on a tap (home notice while a visit is open, or the toggle in Settings; `meta.notificationsEnabled`, unset = on). The SW `notificationclick` focuses the window and posts `notification-click`, or opens `./?azione=checkout#presenza`; the app then shows a dialog whose tap starts the normal check-out (GPS + confirmation). Denied or unsupported: the app keeps working, with the status shown in the UI only.
 - `meta.maxVisitMs` is the lookback margin used by `listVisits` to find visits that started before the period.
 
 ## Testing

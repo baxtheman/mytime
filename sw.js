@@ -1,7 +1,7 @@
 // Service worker di ndóve? (prefisso cache invariato per compatibilità).
 // A ogni rilascio incrementare CACHE_VERSION (e APP_VERSION in js/config.js).
 
-const CACHE_VERSION = 'v8';
+const CACHE_VERSION = 'v9';
 const PREFIX = 'registro-presenze-';
 const SHELL_CACHE = `${PREFIX}${CACHE_VERSION}`;
 const TILE_CACHE = `${PREFIX}tiles`; // condivisa tra versioni, max 200 voci
@@ -27,6 +27,7 @@ const SHELL = [
   './js/ui/history.js',
   './js/ui/install.js',
   './js/ui/map.js',
+  './js/ui/notifications.js',
   './js/ui/onboarding.js',
   './js/ui/placeForm.js',
   './js/ui/places.js',
@@ -84,6 +85,26 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
+// Notifica locale "visita-aperta" (mostrata dall'app, mai da push). Il tap apre o porta in primo piano
+// l'app; "Check-out" avvia il flusso di check-out, che chiede comunque conferma prima di salvare.
+// La notifica non viene chiusa qui: la chiude l'app quando la visita viene davvero chiusa.
+self.addEventListener('notificationclick', (event) => {
+  const action = event.action === 'checkout' ? 'checkout' : '';
+  event.waitUntil(
+    (async () => {
+      const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const client = windows.find((c) => c.url.startsWith(self.registration.scope));
+      if (client) {
+        await client.focus();
+        client.postMessage({ type: 'notification-click', action });
+        return;
+      }
+      const url = new URL(action ? './?azione=checkout#presenza' : './#presenza', self.registration.scope);
+      await self.clients.openWindow(url.href);
+    })(),
+  );
 });
 
 /** Copia senza il flag "redirected" (altrimenti il browser la rifiuta per le navigazioni). */

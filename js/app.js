@@ -8,7 +8,8 @@ import { h, icon, showError, toast } from './ui/dom.js';
 import { applyTheme } from './ui/theme.js';
 import * as install from './ui/install.js';
 import { showOnboarding } from './ui/onboarding.js';
-import presence, { checkForgottenCheckout } from './ui/presence.js';
+import presence, { checkForgottenCheckout, checkOutFromNotification } from './ui/presence.js';
+import { initNotifications } from './ui/notifications.js';
 import history from './ui/history.js';
 import reportScreen from './ui/reportScreen.js';
 import places from './ui/places.js';
@@ -127,6 +128,18 @@ function injectAnalytics() {
 }
 
 // ---------------------------------------------------------------------------
+// Tap sulla notifica della visita in corso
+
+// App aperta dalla notifica (nessuna finestra già aperta): "?azione=checkout" viene letto e rimosso.
+const launchAction = new URLSearchParams(location.search).get('azione');
+if (launchAction) window.history.replaceState(null, '', `${location.pathname}#presenza`);
+
+function onNotificationClick(action) {
+  if (location.hash !== '#presenza') location.hash = '#presenza';
+  if (action === 'checkout') checkOutFromNotification().catch(showError);
+}
+
+// ---------------------------------------------------------------------------
 // Avvio
 
 addEventListener('db-blocked', () => {
@@ -167,7 +180,9 @@ async function start() {
   route();
 
   if (!(await db.getMeta('onboardedAt'))) await showOnboarding();
-  checkForgottenCheckout().catch(showError);
+  initNotifications(onNotificationClick);
+  if (launchAction === 'checkout') checkOutFromNotification().catch(showError);
+  else checkForgottenCheckout().catch(showError);
   geocode.processQueue();
 
   addEventListener('online', () => {

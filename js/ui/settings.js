@@ -1,4 +1,4 @@
-// Impostazioni: tema, mappa, Nominatim, archiviazione, backup/import/export.
+// Impostazioni: tema, notifiche, mappa, Nominatim, archiviazione, backup/import/export.
 
 import * as db from '../db.js';
 import * as geocode from '../geocode.js';
@@ -9,6 +9,7 @@ import { h, setChildren, openDialog, toast, showError, field, deliverFile, downl
 import { getTheme, setTheme } from './theme.js';
 import { storageStatus, requestPersistence } from './install.js';
 import { showOnboarding } from './onboarding.js';
+import * as notifications from './notifications.js';
 
 async function exportJson() {
   const file = await buildBackupFile();
@@ -119,6 +120,8 @@ export default {
     const backupInfo = h('p', { class: 'hint' });
     const email = h('input', { type: 'email', autocomplete: 'email', inputmode: 'email', placeholder: 'nome@esempio.it' });
     const mapToggle = h('input', { type: 'checkbox' });
+    const notifyToggle = h('input', { type: 'checkbox' });
+    const notifyInfo = h('div');
     const fileInput = h('input', { type: 'file', accept: 'application/json,.json', hidden: true });
 
     const themeGroup = h(
@@ -149,6 +152,17 @@ export default {
       await db.setMeta('mapEnabled', mapToggle.checked);
       toast(mapToggle.checked ? 'Mappa attivata' : 'Mappa disattivata');
     });
+    notifyToggle.addEventListener('change', async () => {
+      const on = notifyToggle.checked;
+      // Il permesso si chiede subito, dentro il tap (Safari non lo concede dopo un await).
+      const asked = on && notifications.permission() === 'default' ? notifications.requestPermission() : null;
+      await db.setMeta('notificationsEnabled', on);
+      const p = asked ? await asked : notifications.permission();
+      if (!on) toast('Notifica disattivata');
+      else if (p === 'granted') toast('Notifica attivata');
+      else showError('Le notifiche non sono consentite: lo stato della visita resta visibile nella schermata Presenza.');
+      renderNotify();
+    });
     fileInput.addEventListener('change', () => {
       const f = fileInput.files[0];
       fileInput.value = '';
@@ -160,6 +174,13 @@ export default {
 
     el.append(
       h('section', { class: 'card' }, h('h2', { class: 'section-title', text: 'Aspetto' }), themeGroup),
+      h(
+        'section',
+        { class: 'card' },
+        h('h2', { class: 'section-title', text: 'Notifiche' }),
+        h('label', { class: 'inline' }, notifyToggle, ' Mostra la visita in corso nelle notifiche'),
+        notifyInfo,
+      ),
       h(
         'section',
         { class: 'card' },
@@ -232,7 +253,24 @@ export default {
       );
     }
 
+    function renderNotify() {
+      const p = notifications.permission();
+      notifyToggle.disabled = p === 'unsupported';
+      const text = {
+        unsupported: 'Questo browser non supporta le notifiche. Su iPhone e iPad servono iOS 16.4 o successivo e l’app installata sulla schermata Home.',
+        denied: 'Le notifiche sono bloccate per questo sito: puoi consentirle dalle impostazioni del browser o del telefono.',
+        default: 'Il permesso verrà chiesto quando attivi l’opzione.',
+        granted: '',
+      }[p];
+      setChildren(notifyInfo, 
+        h('p', { class: 'hint', text: '«Sei in: luogo dalle ora», con il pulsante Check-out (che chiede comunque conferma). Notifica solo locale: nessun server, nessuna lettura della posizione in background.' }),
+        text && h('p', { class: p === 'default' ? 'hint' : 'hint warn', text }),
+      );
+    }
+
     async function render() {
+      notifyToggle.checked = notifications.permission() !== 'unsupported' && (await notifications.isEnabled());
+      renderNotify();
       email.value = await db.getMeta('nominatimEmail', '');
       mapToggle.checked = Boolean(await db.getMeta('mapEnabled', true));
       const last = await db.getMeta('lastBackupAt', null);

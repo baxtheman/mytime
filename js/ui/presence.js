@@ -12,6 +12,7 @@ import { openPlaceForm } from './placeForm.js';
 import { renderVisitItem } from './visits.js';
 import { buildBackupFile, markBackupDone } from '../io.js';
 import * as install from './install.js';
+import * as notifications from './notifications.js';
 
 let busy = false;
 
@@ -175,6 +176,40 @@ export const startCheckOut = guarded(async (visit) => {
 });
 
 // ---------------------------------------------------------------------------
+// Check-out dalla notifica: la posizione si legge solo dopo un tap nell'app, quindi prima un dialogo.
+
+let notificationPromptOpen = false;
+
+export async function checkOutFromNotification() {
+  if (notificationPromptOpen || busy) return;
+  notificationPromptOpen = true;
+  try {
+    const v = await db.getOpenVisit();
+    if (forgottenOpen) return; // il dialogo del check-out dimenticato permette già di chiudere
+    if (!v) {
+      toast('Nessuna visita in corso');
+      return;
+    }
+    const place = await db.getPlace(v.placeId);
+    await openDialog({
+      title: `Check-out da ${placeLabel(place)}?`,
+      body: h(
+        'div',
+        { class: 'form' },
+        h('p', { text: `Arrivo alle ${fmtTime(v.arrival, v.timeZone)} · durata ${fmtDuration(Date.now() - Date.parse(v.arrival))}` }),
+        h('p', { class: 'hint', text: 'Continuando viene letta la posizione attuale; potrai controllare e confermare prima del salvataggio.' }),
+      ),
+      actions: [
+        { label: 'Annulla', value: false },
+        { label: 'Check-out', variant: 'primary', onClick: () => startCheckOut(v) }, // nel tap: GPS subito
+      ],
+    });
+  } finally {
+    notificationPromptOpen = false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Check-out dimenticato (> 12 h)
 
 let forgottenOpen = false;
@@ -185,6 +220,7 @@ export async function checkForgottenCheckout() {
   if (!v || Date.now() - Date.parse(v.arrival) < FORGOTTEN_CHECKOUT_MS) return;
   const still = await db.getMeta('stillHere', null);
   if (still?.visitId === v.id && Date.now() - Date.parse(still.at) < FORGOTTEN_CHECKOUT_MS) return;
+  if (forgottenOpen || notificationPromptOpen || busy) return;
   forgottenOpen = true;
   try {
     const place = await db.getPlace(v.placeId);
@@ -234,8 +270,39 @@ export async function checkForgottenCheckout() {
 // ---------------------------------------------------------------------------
 // Avvisi in home
 
-async function renderNotices(container, hasVisits) {
+async function renderNotices(container, { hasVisits, hasOpen, rerender }) {
   const notices = [];
+
+  // Notifica della visita in corso: il permesso si chiede solo con un tap, e solo se c'è una visita aperta.
+  if (hasOpen && notifications.permission() === 'default' && (await notifications.isEnabled())) {
+    notices.push(
+      h(
+        'div',
+        { class: 'notice notice-info' },
+        h('p', { text: 'Vuoi vedere la visita in corso nelle notifiche, con il pulsante Check-out?' }),
+        h('p', { class: 'hint', text: 'Notifica solo locale: nessun server e nessuna lettura della posizione in background.' }),
+        h('button', {
+          type: 'button',
+          class: 'btn btn-secondary btn-small',
+          text: 'Attiva notifica',
+          onclick: () =>
+            notifications
+              .requestPermission()
+              .then((p) => {
+                toast(p === 'granted' ? 'Notifica attivata' : 'Notifiche non consentite: lo stato resta visibile qui.');
+                rerender();
+              })
+              .catch(showError),
+        }),
+        h('button', {
+          type: 'button',
+          class: 'btn btn-text btn-small',
+          text: 'Non ora',
+          onclick: () => db.setMeta('notificationsEnabled', false).then(() => toast('Puoi attivarla dalle Impostazioni')).catch(showError),
+        }),
+      ),
+    );
+  }
 
   // Promemoria di backup
   const last = await db.getMeta('lastBackupAt', null);
@@ -360,7 +427,7 @@ export default {
           ? h('ul', { class: 'visit-list' }, items.map((v) => renderVisitItem(v, byId.get(v.placeId))))
           : h('p', { class: 'empty', text: 'Nessuna visita oggi.' }),
       );
-      await renderNotices(notices, count > 0);
+      await renderNotices(notices, { hasVisits: count > 0, hasOpen: Boolean(open), rerender: () => render().catch(showError) });
     }
 
     const offInstall = install.onInstallChange(() => render().catch(showError));
