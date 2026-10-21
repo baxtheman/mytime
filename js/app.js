@@ -118,6 +118,14 @@ async function registerServiceWorker() {
   }
 }
 
+// Vercel Web Analytics: equivalente senza bundler di `inject()` di @vercel/analytics.
+// Lo script è servito dallo stesso dominio; in locale non esiste, quindi lo salta.
+function injectAnalytics() {
+  if (['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)) return;
+  window.va = window.va || ((...params) => (window.vaq = window.vaq || []).push(params));
+  document.head.append(h('script', { src: './_vercel/insights/script.js', defer: true }));
+}
+
 // ---------------------------------------------------------------------------
 // Avvio
 
@@ -175,4 +183,5 @@ async function start() {
   });
 }
 
+injectAnalytics();
 start();

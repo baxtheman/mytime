@@ -87,6 +87,7 @@ Do not precache `./index.html`: the shell is `./`. Some servers (`npx serve`, Ve
 - Visits left open after an import with several open visits get `status: "closed"`, `departure: null` and the `needsClose` flag ("Da chiudere"). They are excluded from totals.
 - In the summary-only report there is a `PER GIORNO` section. Days covered only by the after-midnight part of a visit appear as "prosecuzione dal giorno precedente".
 - **Map of a visit's GPS points** in the visit dialog: arrival pin "A" (accent), departure pin "P" (text colour), dashed accuracy circles, place radius circle. The map is **on by default** (`getMeta('mapEnabled', true)`: an unset value means on; an explicit `false` from the user is kept). When it's off, the visit map loads only on tapping "Mostra sulla mappa". Each GPS line also has an "Apri in OpenStreetMap" link (`osmUrl()` in `map.js`). No API key: Leaflet + `tile.openstreetmap.org`, respecting the [tile usage policy](https://operations.osmfoundation.org/policies/tiles/) (visible attribution, no bulk prefetching).
+- **Vercel Web Analytics** (user decision): `injectAnalytics()` in `js/app.js` loads the same-origin `./_vercel/insights/script.js` (skipped on localhost). No npm import: there is no bundler. `sw.js` never intercepts `/_vercel/`. It's the only telemetry allowed, and it never sends user data.
 - `meta.maxVisitMs` is the lookback margin used by `listVisits` to find visits that started before the period.
 
 ## Testing

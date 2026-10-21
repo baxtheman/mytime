@@ -1,7 +1,7 @@
 // Service worker di ndóve? (prefisso cache invariato per compatibilità).
 // A ogni rilascio incrementare CACHE_VERSION (e APP_VERSION in js/config.js).
 
-const CACHE_VERSION = 'v7';
+const CACHE_VERSION = 'v8';
 const PREFIX = 'registro-presenze-';
 const SHELL_CACHE = `${PREFIX}${CACHE_VERSION}`;
 const TILE_CACHE = `${PREFIX}tiles`; // condivisa tra versioni, max 200 voci
@@ -139,6 +139,9 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(staleWhileRevalidate(event));
     return;
   }
+
+  // Vercel Web Analytics: solo rete, mai in cache.
+  if (url.origin === self.location.origin && url.pathname.includes('/_vercel/')) return;
 
   if (url.origin === self.location.origin) {
     // Navigazioni: sempre l'app shell (single page).
