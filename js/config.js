@@ -3,9 +3,13 @@ export const APP_NAME = '📍 ndóve?';
 // Nome breve senza emoji (nomi file, etichetta della schermata Home).
 export const APP_SHORT_NAME = 'ndóve?';
 export const FILE_PREFIX = 'ndove';
-// Identificatori interni (database, cache, formato backup): NON cambiarli, servono per i dati esistenti.
-export const APP_VERSION = '1.0.3';
+export const APP_VERSION = '1.0.5';
 
+// Crediti (pagina Informazioni).
+export const AUTHOR = { name: 'Daniele Baggio', url: 'https://github.com/baxtheman' };
+export const REPO_URL = 'https://github.com/baxtheman/mytime';
+
+// Identificatori interni (database, canale, formato backup): NON cambiarli, servono per i dati esistenti.
 export const DB_NAME = 'registro-presenze';
 export const DB_VERSION = 1;
 export const CHANNEL_NAME = 'registro-presenze';

@@ -265,6 +265,14 @@ main[data-screen='presenza'] {
   font-size: 1.1rem;
   margin-bottom: 8px;
 }
+.prose ul {
+  margin: 0 0 8px;
+  padding-left: 20px;
+  list-style: disc;
+}
+.prose li + li {
+  margin-top: 6px;
+}
 
 .section-title {
   display: flex;
@@ -1022,6 +1030,64 @@ label.inline {
   transform: rotate(-45deg);
   border: 3px solid #fff;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+/* Punti GPS della visita: arrivo = accento, partenza = quasi nero (le tile restano chiare anche nel tema scuro). */
+.map-pin-arrival span,
+.map-pin-departure span {
+  display: grid;
+  place-items: center;
+}
+.map-pin-arrival span {
+  background: var(--accent);
+}
+.map-pin-departure span {
+  background: #0b0c0e;
+}
+.map-pin b {
+  transform: rotate(45deg);
+  color: #fff;
+  font-size: 0.8125rem;
+  line-height: 1;
+}
+.map-acc-arrival {
+  stroke: var(--accent);
+  fill: var(--accent);
+}
+.map-acc-departure {
+  stroke: #0b0c0e;
+  fill: #0b0c0e;
+}
+.map-slot:empty {
+  display: none;
+}
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125rem;
+  color: var(--text-2);
+}
+.map-legend li::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: -1px;
+}
+.legend-arrival::before {
+  background: var(--accent);
+}
+.legend-departure::before {
+  background: #0b0c0e;
+  box-shadow: 0 0 0 1px var(--text-2);
+}
+.legend-place::before {
+  border: 2px solid var(--text-2);
 }
 
 /* ---------------------------------------------------------------- Dialoghi */

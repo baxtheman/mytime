@@ -1,7 +1,7 @@
 // Service worker di ndóve? (prefisso cache invariato per compatibilità).
 // A ogni rilascio incrementare CACHE_VERSION (e APP_VERSION in js/config.js).
 
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v6';
 const PREFIX = 'registro-presenze-';
 const SHELL_CACHE = `${PREFIX}${CACHE_VERSION}`;
 const TILE_CACHE = `${PREFIX}tiles`; // condivisa tra versioni, max 200 voci

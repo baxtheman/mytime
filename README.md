@@ -1,6 +1,6 @@
 # 📍 ndóve?
 
-PWA single-page in italiano (ex "Registro Presenze") per registrare arrivo e partenza dai luoghi con data/ora, posizione GPS obbligatoria, indirizzo leggibile (Nominatim), note e report testuali da condividere via email.
+PWA single-page in italiano per registrare arrivo e partenza dai luoghi con data/ora, posizione GPS obbligatoria, indirizzo leggibile (Nominatim), note e report testuali da condividere via email.
 
 - HTML, CSS e JavaScript vanilla con moduli ES nativi: **nessuna build**, i file si servono così come sono.
 - Tutti i dati restano nel browser (IndexedDB). Nessun server, account, cloud o telemetria.
@@ -131,6 +131,6 @@ Gli utenti vedono il banner "Nuova versione disponibile · Aggiorna": il tap inv
 ## Servizi esterni
 
 - **Nominatim** (`nominatim.openstreetmap.org`): reverse geocoding, nel rispetto della [usage policy](https://operations.osmfoundation.org/policies/nominatim/) (al massimo 1 richiesta ogni 1100 ms, timeout 10 s, cache 90 giorni, nessuna ripetizione automatica; dopo 3 tentativi falliti l'indirizzo passa a `failed` e compare "Riprova indirizzo"). L'app si identifica con il Referer e con l'email facoltativa configurabile nelle Impostazioni.
-- **Leaflet** (unpkg.com) e **tile OpenStreetMap**, solo se la mappa è attivata nelle Impostazioni.
+- **Leaflet** (unpkg.com) e **tile OpenStreetMap**: nessuna chiave API. La mappa si carica nei luoghi e nelle visite (punti di arrivo «A» e partenza «P») se è attivata nelle Impostazioni; altrimenti, in una visita, solo toccando «Mostra sulla mappa». Ogni coordinata ha anche il link «Apri in OpenStreetMap».
 
 Indirizzi e mappe © contributori OpenStreetMap, dati con licenza [ODbL](https://opendatacommons.org/licenses/odbl/).

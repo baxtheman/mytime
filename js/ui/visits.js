@@ -6,6 +6,7 @@ import { NOTE_MAX } from '../config.js';
 import { fmtDeparture, fmtDuration, fmtTime, fmtDateTime, fmtCoords, fmtNumber, toInputValue, fromInputValue, nowRoundedToMinute } from '../format.js';
 import { placeLabel } from '../report.js';
 import { h, openDialog, confirmDialog, toast, showError, field } from './dom.js';
+import { createPointsMap, isMapEnabled, osmUrl } from './map.js';
 
 export function visitBadges(v) {
   const b = [];
@@ -77,7 +78,12 @@ function addressBlock(label, v, which, input) {
     'div',
     { class: 'addr-block' },
     field(`Indirizzo ${label}`, input, addr?.edited && addr.originalText ? `Rilevato: ${addr.originalText}` : null),
-    h('p', { class: 'hint', text: `GPS: ${fmtCoords(pos.lat, pos.lon)} ±${fmtNumber(pos.accuracy)} m (non modificabile)` }),
+    h(
+      'p',
+      { class: 'hint' },
+      `GPS: ${fmtCoords(pos.lat, pos.lon)} ±${fmtNumber(pos.accuracy)} m (non modificabile) · `,
+      h('a', { href: osmUrl(pos.lat, pos.lon), target: '_blank', rel: 'noopener', text: 'Apri in OpenStreetMap' }),
+    ),
     status && h('p', { class: 'hint', text: status }),
     addr?.status === 'failed' &&
       h('button', {
@@ -94,7 +100,7 @@ function addressBlock(label, v, which, input) {
 }
 
 export async function openVisitEditor(visitId) {
-  const [v, places] = await Promise.all([db.getVisit(visitId), db.getPlaces({ includeDeleted: true })]);
+  const [v, places, mapOn] = await Promise.all([db.getVisit(visitId), db.getPlaces({ includeDeleted: true }), isMapEnabled()]);
   if (!v) return showError('Visita non trovata: forse è stata eliminata in un’altra scheda.');
   const placesById = new Map(places.map((p) => [p.id, p]));
   const nowMax = toInputValue(nowRoundedToMinute());
@@ -123,10 +129,36 @@ export async function openVisitEditor(visitId) {
         (orig.placeId !== v.placeId ? `, luogo ${placeLabel(placesById.get(orig.placeId))}` : ''),
     );
 
+  // Mappa dei punti GPS: subito se attivata nelle Impostazioni, altrimenti solo su richiesta.
+  const points = [
+    v.arrivalPos && { ...v.arrivalPos, kind: 'arrival', letter: 'A', label: `Arrivo, ${fmtTime(v.arrival, v.timeZone)}` },
+    v.departurePos && { ...v.departurePos, kind: 'departure', letter: 'P', label: `Partenza, ${fmtTime(v.departure, v.timeZone)}` },
+  ].filter(Boolean);
+  let map = null;
+  const mapSlot = h('div', { class: 'map-slot' });
+  const showMap = () => {
+    map = createPointsMap({ points, place: placesById.get(v.placeId) });
+    mapSlot.replaceChildren(
+      map.el,
+      h(
+        'ul',
+        { class: 'map-legend' },
+        h('li', { class: 'legend-arrival', text: 'A · arrivo' }),
+        points.length > 1 && h('li', { class: 'legend-departure', text: 'P · partenza' }),
+        h('li', { class: 'legend-place', text: 'cerchio · raggio del luogo' }),
+      ),
+    );
+  };
+  if (points.length) {
+    if (mapOn) queueMicrotask(showMap);
+    else mapSlot.append(h('button', { type: 'button', class: 'btn btn-secondary', text: 'Mostra sulla mappa', onclick: showMap }));
+  }
+
   const body = h(
     'form',
     { class: 'form', onsubmit: (e) => e.preventDefault() },
     visitBadges(v),
+    mapSlot,
     field('Arrivo', arrival),
     field('Partenza', departure, v.status === 'open' ? 'Lascia vuoto se la visita è ancora in corso.' : null),
     field('Luogo', placeSel),
@@ -184,7 +216,7 @@ export async function openVisitEditor(visitId) {
     return 'deleted';
   };
 
-  return openDialog({
+  const result = await openDialog({
     title: 'Modifica visita',
     body,
     actions: [
@@ -193,5 +225,7 @@ export async function openVisitEditor(visitId) {
       { label: 'Salva', variant: 'primary', onClick: () => save() },
     ],
   });
+  map?.destroy();
+  return result;
 }
 

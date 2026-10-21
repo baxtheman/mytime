@@ -165,7 +165,7 @@ export default {
         { class: 'card' },
         h('h2', { class: 'section-title', text: 'Mappa' }),
         h('label', { class: 'inline' }, mapToggle, ' Mostra la mappa (Leaflet, tile OpenStreetMap)'),
-        h('p', { class: 'hint', text: 'Facoltativa: permette di correggere la posizione dei luoghi trascinando il segnaposto. L’app è completa anche senza mappa.' }),
+        h('p', { class: 'hint', text: 'Facoltativa: mostra arrivo e partenza delle visite e permette di correggere la posizione dei luoghi trascinando il segnaposto. Se è spenta, nella visita c’è il pulsante «Mostra sulla mappa». Nessuna chiave API: usa le tile di OpenStreetMap.' }),
       ),
       h(
         'section',

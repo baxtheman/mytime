@@ -1,6 +1,6 @@
 // Informazioni: cos'è l'app, privacy, servizi esterni, attribuzioni.
 
-import { APP_NAME, APP_VERSION } from '../config.js';
+import { APP_NAME, APP_VERSION, AUTHOR, REPO_URL } from '../config.js';
 import { h } from './dom.js';
 import { attribution } from './map.js';
 
@@ -37,6 +37,21 @@ export default {
         { class: 'card prose' },
         h('h2', { text: 'Permessi' }),
         h('p', { text: 'La posizione viene letta solo quando tocchi Check-in, Check-out o "Usa posizione attuale": mai in background.' }),
+      ),
+      h(
+        'section',
+        { class: 'card prose' },
+        h('h2', { text: 'Crediti' }),
+        h('p', {}, 'Ideata e sviluppata da ', link(AUTHOR.url, AUTHOR.name), '.'),
+        h('p', {}, 'Codice sorgente su ', link(REPO_URL, 'GitHub'), '. Hai trovato un problema o hai un’idea? ', link(`${REPO_URL}/issues`, 'Apri una segnalazione'), '.'),
+        h('p', { text: 'Realizzata con:' }),
+        h(
+          'ul',
+          {},
+          h('li', {}, link('https://leafletjs.com/', 'Leaflet'), ' – libreria per le mappe (licenza BSD-2-Clause)'),
+          h('li', {}, link('https://www.openstreetmap.org/copyright', 'OpenStreetMap'), ' – mappe e dati degli indirizzi (licenza ODbL)'),
+          h('li', {}, link('https://nominatim.org/', 'Nominatim'), ' – ricerca degli indirizzi dalle coordinate'),
+        ),
       ),
     );
     return {};
